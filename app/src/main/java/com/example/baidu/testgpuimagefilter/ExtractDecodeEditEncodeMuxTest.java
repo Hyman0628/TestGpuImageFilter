@@ -56,7 +56,7 @@ public class ExtractDecodeEditEncodeMuxTest {
     private static final File OUTPUT_FILENAME_DIR = Environment.getExternalStorageDirectory();
     // parameters for the video encoder
     private static final String OUTPUT_VIDEO_MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
-    private static final int OUTPUT_VIDEO_BIT_RATE = 2000000; // 2Mbps
+    private static final int OUTPUT_VIDEO_BIT_RATE = 500000; // 2Mbps
     private static final int OUTPUT_VIDEO_FRAME_RATE = 15; // 15fps
     private static final int OUTPUT_VIDEO_IFRAME_INTERVAL = 10; // 10 seconds between I-frames
     private static final int OUTPUT_VIDEO_COLOR_FORMAT =
@@ -93,32 +93,32 @@ public class ExtractDecodeEditEncodeMuxTest {
     private int mSourceResId;
     /** The destination file for the encoded output. */
     private String mOutputFile;
-    public void testExtractDecodeEditEncodeMuxQCIF() throws Throwable {
-        setSize(176, 144);
-        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
-        setCopyVideo();
-        TestWrapper.runTest(this);
-    }
-    public void testExtractDecodeEditEncodeMuxQVGA() throws Throwable {
-        setSize(320, 240);
-        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
-        setCopyVideo();
-        TestWrapper.runTest(this);
-    }
-    public void testExtractDecodeEditEncodeMux720p() throws Throwable {
-        setSize(1280, 720);
-        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
-        setCopyVideo();
-        TestWrapper.runTest(this);
-    }
-    public void testExtractDecodeEditEncodeMuxAudio() throws Throwable {
-        setSize(1280, 720);
-        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
-        setCopyAudio();
-        TestWrapper.runTest(this);
-    }
-    public void testExtractDecodeEditEncodeMuxAudioVideo() throws Throwable {
-        setSize(1280, 720);
+//    public void testExtractDecodeEditEncodeMuxQCIF() throws Throwable {
+//        setSize(176, 144);
+//        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
+//        setCopyVideo();
+//        TestWrapper.runTest(this);
+//    }
+//    public void testExtractDecodeEditEncodeMuxQVGA() throws Throwable {
+//        setSize(320, 240);
+//        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
+//        setCopyVideo();
+//        TestWrapper.runTest(this);
+//    }
+//    public void testExtractDecodeEditEncodeMux720p() throws Throwable {
+//        setSize(1280, 720);
+//        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
+//        setCopyVideo();
+//        TestWrapper.runTest(this);
+//    }
+//    public void testExtractDecodeEditEncodeMuxAudio() throws Throwable {
+//        setSize(1280, 720);
+//        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
+//        setCopyAudio();
+//        TestWrapper.runTest(this);
+//    }
+    public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
+        setSize(480, 360);
         setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
         setCopyAudio();
         setCopyVideo();
@@ -130,41 +130,42 @@ public class ExtractDecodeEditEncodeMuxTest {
                 setOutputFile();
                 try {
                     extractDecodeEditEncodeMux();
-                } catch (Exception e) {
+                    resultListener.onResult(true, "no ErrorDesc now");
+                } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
         }.start();
     }
     /** Wraps testExtractDecodeEditEncodeMux() */
-    private static class TestWrapper implements Runnable {
-        private Throwable mThrowable;
-        private ExtractDecodeEditEncodeMuxTest mTest;
-        private TestWrapper(ExtractDecodeEditEncodeMuxTest test) {
-            mTest = test;
-        }
-        @Override
-        public void run() {
-            try {
-                mTest.extractDecodeEditEncodeMux();
-            } catch (Throwable th) {
-                mThrowable = th;
-            }
-        }
-        /**
-         * Entry point.
-         */
-        public static void runTest(ExtractDecodeEditEncodeMuxTest test) throws Throwable {
-            test.setOutputFile();
-            TestWrapper wrapper = new TestWrapper(test);
-            Thread th = new Thread(wrapper, "codec test");
-            th.start();
-            th.join();
-            if (wrapper.mThrowable != null) {
-                throw wrapper.mThrowable;
-            }
-        }
-    }
+//    private static class TestWrapper implements Runnable {
+//        private Throwable mThrowable;
+//        private ExtractDecodeEditEncodeMuxTest mTest;
+//        private TestWrapper(ExtractDecodeEditEncodeMuxTest test) {
+//            mTest = test;
+//        }
+//        @Override
+//        public void run() {
+//            try {
+//                mTest.extractDecodeEditEncodeMux();
+//            } catch (Throwable th) {
+//                mThrowable = th;
+//            }
+//        }
+//        /**
+//         * Entry point.
+//         */
+//        public static void runTest(ExtractDecodeEditEncodeMuxTest test) throws Throwable {
+//            test.setOutputFile();
+//            TestWrapper wrapper = new TestWrapper(test);
+//            Thread th = new Thread(wrapper, "codec test");
+//            th.start();
+//            th.join();
+//            if (wrapper.mThrowable != null) {
+//                throw wrapper.mThrowable;
+//            }
+//        }
+//    }
     /**
      * Sets the test to copy the video stream.
      */

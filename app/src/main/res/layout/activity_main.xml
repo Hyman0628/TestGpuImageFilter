@@ -4,15 +4,41 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.baidu.testgpuimagefilter.MainActivity">
 
-    <TextView
-        android:id="@+id/sample_text"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_alignParentBottom="true"
+        android:id="@+id/llButtons"
+        android:orientation="horizontal"
+        >
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="100" />
+
+        <Button
+            android:id="@+id/button_choose_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="选滤镜" />
+        <Button
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:id="@+id/btnGenerate"
+            android:text="生成"
+            />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/llButtons"
+        android:id="@+id/rlGlViewContainer">
+
+    </RelativeLayout>
 </RelativeLayout>
