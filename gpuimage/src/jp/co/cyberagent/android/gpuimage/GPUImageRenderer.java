@@ -94,6 +94,7 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         mGLTextureBuffer = ByteBuffer.allocateDirect(TEXTURE_NO_ROTATION.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
+        mGLTextureBuffer.put(TEXTURE_NO_ROTATION).position(0);
         setRotation(Rotation.NORMAL, false, false);
     }
 
