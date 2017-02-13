@@ -25,7 +25,7 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
     private GPUImageFilter mFilter;
     private GPUImageFilterTools.FilterAdjuster mFilterAdjuster;
-
+    private GPUImageFilterTools.FilterType currentFilterType = GPUImageFilterTools.FilterType.NOFILTER;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +44,7 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
     }
 
+    private volatile boolean isGenerating = false;
     @Override
     public void onClick(final View v) {
         switch (v.getId()) {
@@ -51,19 +52,26 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
                 GPUImageFilterTools.showDialog(this, new GPUImageFilterTools.OnGpuImageFilterChosenListener() {
 
                     @Override
-                    public void onGpuImageFilterChosenListener(final GPUImageFilter filter) {
+                    public void onGpuImageFilterChosenListener(final GPUImageFilter filter, final GPUImageFilterTools.FilterType filterType) {
+                        currentFilterType = filterType;
                         switchFilterTo(filter);
                     }
                 });
                 break;
 
             case R.id.btnGenerate:
+                if (isGenerating) {
+                    Toast.makeText(MainActivity.this, "已经有一个正在生成的任务，请等待。。", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                isGenerating = true;
                 final ResultListener resultListener = new ResultListener() {
                     @Override
                     public void onResult(final boolean success, final String extra) {
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                isGenerating = false;
                                 Toast.makeText(MainActivity.this, success? "Generate Sucess!" : "GenerateFailed! reason="
                                         + extra, Toast.LENGTH_LONG).show();
                             }
@@ -74,7 +82,9 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
                 // do effect-reencode
                 ExtractDecodeEditEncodeMuxTest test = new ExtractDecodeEditEncodeMuxTest(MainActivity.this);
                 try {
+                    test.setFilterType(currentFilterType);
                     test.testExtractDecodeEditEncodeMuxAudioVideo(resultListener);
+
                 } catch (Throwable tr) {
 
                 }

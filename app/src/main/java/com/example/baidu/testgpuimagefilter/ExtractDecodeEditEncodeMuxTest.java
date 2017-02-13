@@ -15,7 +15,6 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.os.Environment;
 import android.os.HandlerThread;
-import android.test.AndroidTestCase;
 import android.util.Log;
 import android.view.Surface;
 import java.io.File;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.security.AccessController.getContext;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
@@ -44,9 +42,9 @@ import static junit.framework.Assert.fail;
 @TargetApi(18)
 public class ExtractDecodeEditEncodeMuxTest {
 
-    Context mContext;
+    Context mAppContext;
     public ExtractDecodeEditEncodeMuxTest(Context context) {
-        mContext = context;
+        mAppContext = context.getApplicationContext();
     }
     private static final String TAG = ExtractDecodeEditEncodeMuxTest.class.getSimpleName();
     private static final boolean VERBOSE = true; // lots of logging
@@ -117,6 +115,12 @@ public class ExtractDecodeEditEncodeMuxTest {
 //        setCopyAudio();
 //        TestWrapper.runTest(this);
 //    }
+
+    private GPUImageFilterTools.FilterType mFilterType = GPUImageFilterTools.FilterType.NOFILTER;
+    private int mFilterAjust = 0; // not use now
+    public void setFilterType(GPUImageFilterTools.FilterType filterType) {
+        mFilterType = filterType;
+    }
     public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
         setSize(480, 360);
         setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
@@ -249,7 +253,7 @@ public class ExtractDecodeEditEncodeMuxTest {
         if (VERBOSE) Log.d(TAG, "audio found codec: " + audioCodecInfo.getName());
         MediaExtractor videoExtractor = null;
         MediaExtractor audioExtractor = null;
-        OutputSurface outputSurface = null;
+        OutputSurfaceWithFilter outputSurface = null;
         MediaCodec videoDecoder = null;
         MediaCodec audioDecoder = null;
         MediaCodec videoEncoder = null;
@@ -283,8 +287,8 @@ public class ExtractDecodeEditEncodeMuxTest {
                 inputSurface = new InputSurface(inputSurfaceReference.get());
                 inputSurface.makeCurrent();
                 // Create a MediaCodec for the decoder, based on the extractor's format.
-                outputSurface = new OutputSurface();
-                outputSurface.changeFragmentShader(FRAGMENT_SHADER);
+                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType);
+//                outputSurface.changeFragmentShader(FRAGMENT_SHADER);
                 videoDecoder = createVideoDecoder(inputFormat, outputSurface.getSurface());
             }
             if (mCopyAudio) {
@@ -430,7 +434,7 @@ public class ExtractDecodeEditEncodeMuxTest {
      */
     private MediaExtractor createExtractor() throws IOException {
         MediaExtractor extractor;
-        AssetFileDescriptor srcFd = mContext.getResources().openRawResourceFd(mSourceResId);
+        AssetFileDescriptor srcFd = mAppContext.getResources().openRawResourceFd(mSourceResId);
         extractor = new MediaExtractor();
         extractor.setDataSource(srcFd.getFileDescriptor(), srcFd.getStartOffset(),
                 srcFd.getLength());
@@ -538,7 +542,7 @@ public class ExtractDecodeEditEncodeMuxTest {
             MediaCodec audioEncoder,
             MediaMuxer muxer,
             InputSurface inputSurface,
-            OutputSurface outputSurface) {
+            OutputSurfaceWithFilter outputSurface) {
         ByteBuffer[] videoDecoderInputBuffers = null;
         ByteBuffer[] videoDecoderOutputBuffers = null;
         ByteBuffer[] videoEncoderOutputBuffers = null;
