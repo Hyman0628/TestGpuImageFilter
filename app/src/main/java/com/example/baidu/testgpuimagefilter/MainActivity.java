@@ -1,6 +1,7 @@
 package com.example.baidu.testgpuimagefilter;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -16,6 +17,8 @@ import android.widget.Toast;
 
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
+
+import static com.example.baidu.testgpuimagefilter.GPUImageFilterTools.createFilterForType;
 
 
 public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
@@ -36,7 +39,7 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
         ((SeekBar) findViewById(R.id.seekBar)).setOnSeekBarChangeListener(this);
         findViewById(R.id.button_choose_filter).setOnClickListener(this);
         findViewById(R.id.btnGenerate).setOnClickListener(this);
-
+        findViewById(R.id.btnMulti).setOnClickListener(this);
         /**
          * 初始化显示view
          */
@@ -58,7 +61,10 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
                     }
                 });
                 break;
-
+            case R.id.btnMulti:
+                Intent intent = new Intent(MainActivity.this, MultiFilterPreviewActivity.class);
+                this.startActivityForResult(intent, 10000);
+                break;
             case R.id.btnGenerate:
                 if (isGenerating) {
                     Toast.makeText(MainActivity.this, "已经有一个正在生成的任务，请等待。。", Toast.LENGTH_LONG).show();
@@ -89,9 +95,22 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
                 }
                 break;
+
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 10000) {
+            if (resultCode == RESULT_OK) {
+                // set the selected filter
+                String filterSelect = data.getStringExtra("filter");
+                GPUImageFilterTools.FilterType filterType = GPUImageFilterTools.FilterType.valueOf(filterSelect);
+                switchFilterTo(GPUImageFilterTools.createFilterForType(this, filterType));
+            }
+        }
+    }
 
     private void switchFilterTo(final GPUImageFilter filter) {
         if (mFilter == null
@@ -136,6 +155,22 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
     static public interface ResultListener {
         void onResult(boolean success, String extra);
+    }
+
+    @Override
+    protected void onPause() {
+        // do sth
+        if (mediaPlayer != null) {
+            mediaPlayer.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // do sth
+        mediaPlayer.start();
     }
 
     @Override

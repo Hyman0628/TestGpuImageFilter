@@ -28,6 +28,12 @@
         <Button
             android:layout_width="80dp"
             android:layout_height="50dp"
+            android:id="@+id/btnMulti"
+            android:text="多预览"
+            />
+        <Button
+            android:layout_width="80dp"
+            android:layout_height="50dp"
             android:id="@+id/btnGenerate"
             android:text="生成"
             />
