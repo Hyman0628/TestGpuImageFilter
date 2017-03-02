@@ -65,8 +65,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
     private GridView mGridView;
     private ArrayList<GridItem> mGridData;
     private GridViewAdapter mGridViewAdapter;
-    MediaPlayer mediaPlayer;
-    SurfaceTexture mediaSurfaceTexture;
+//    MediaPlayer mediaPlayer;
 
     public static String[] arrText = new String[]{
             "No Filter", "CONTRAST", "GRAYSCALE",
@@ -84,12 +83,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
             SHARPEN, SEPIA, GAMMA,
             THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS
     };
-//
-//    TextureView oneTextureView;
-//
-//    int genTextureID = -1;
-
-//    private static SurfaceHolder sSurfaceHolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,21 +107,11 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
     }
 
-//    private HandlerThread eventThread = new HandlerThread() {
-//
-//    };
-
-    EglCore mEglCore;
 //    private Renderer mRender = new Renderer();
 
     @Override   // SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated holder=" + holder + " (static=" + ")");
-//        if (sSurfaceHolder != null) {
-//            throw new RuntimeException("sSurfaceHolder is already set");
-//        }
-//
-//        sSurfaceHolder = holder;
 
         if (mRenderThread != null) {
             // Normal case -- render thread is running, tell it about the new surface.
@@ -190,9 +173,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         mRenderThread.waitUntilReady();
 
         RenderHandler rh = mRenderThread.getHandler();
-//        rh.sendZoomValue(mZoomBar.getProgress());
-//        rh.sendSizeValue(mSizeBar.getProgress());
-//        rh.sendRotateValue(mRotateBar.getProgress());
 
         // FIXME i change here, remember to reset!
 //        if (sSurfaceHolder != null) {
@@ -311,32 +291,15 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
         private MainHandler mMainHandler;
 
-//        private Camera mCamera;
         private MediaPlayer mediaPlayer;
-//        private int mCameraPreviewWidth, mCameraPreviewHeight;
 
         private EglCore mEglCore;
-//        private WindowSurface mWindowSurface1;
-//        private WindowSurface mWindowSurface2;
+
         private int mWindowSurfaceWidth;
         private int mWindowSurfaceHeight;
 
         // Receives the output from the camera preview.
         private SurfaceTexture mCameraTexture;
-
-        // Orthographic projection matrix.
-//        private float[] mDisplayProjectionMatrix = new float[16];
-
-//        private Texture2dProgram mTexProgram;
-//        private final ScaledDrawable2d mRectDrawable =
-//                new ScaledDrawable2d(Drawable2d.Prefab.RECTANGLE);
-//        private final Sprite2d mRect = new Sprite2d(mRectDrawable);
-
-//        private int mZoomPercent = DEFAULT_ZOOM_PERCENT;
-//        private int mSizePercent = DEFAULT_SIZE_PERCENT;
-//        private int mRotatePercent = DEFAULT_ROTATE_PERCENT;
-//        private float mPosX, mPosY;
-
 
         Activity activity;
         /**
@@ -364,7 +327,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
             // Prepare EGL and open the camera before we start handling messages.
             mEglCore = new EglCore(null, 0);
-//            openCamera(REQ_CAMERA_WIDTH, REQ_CAMERA_HEIGHT, REQ_CAMERA_FPS);
             mediaPlayer = MediaPlayer.create(activity, R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
             mediaPlayer.setLooping(true);
             mediaPlayer.start();
@@ -372,7 +334,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
             Looper.loop();
 
             Log.d(TAG, "looper quit");
-//            releaseCamera();
             mediaPlayer.release();
             releaseGl(null);
             mEglCore.release();
@@ -414,7 +375,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
         int mTextureId = -1;
 
-//        int genTextureID = OpenGlUtils.NO_TEXTURE;
         final float CUBE[] = {
                 -1.0f, -1.0f,
                 1.0f, -1.0f,
@@ -446,7 +406,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
             Surface surface = holder.getSurface();
             WindowSurface mWindowSurface1 = new WindowSurface(mEglCore, surface, false);
-//                windowSurfaces.add(mWindowSurface1);
             windowSurfacesMap.put(holder, mWindowSurface1);
             mWindowSurface1.makeCurrent();
 
@@ -468,7 +427,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
                         .asFloatBuffer();
                 mGLTextureBuffer.put(TEXTURE_NO_ROTATION).position(0);
 
-//            mRect.setTexture(textureId);
 
 //            if (!newSurface) {
 //                // This Surface was established on a previous run, so no surfaceChanged()
@@ -559,20 +517,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          * Open the camera (to set mCameraAspectRatio) before calling here.
          */
         private void finishSurfaceSetup(SurfaceHolder surfaceHolder) {
-            int width = mWindowSurfaceWidth;
-            int height = mWindowSurfaceHeight;
-//            Log.d(TAG, "finishSurfaceSetup size=" + width + "x" + height +
-//                    " camera=" + mCameraPreviewWidth + "x" + mCameraPreviewHeight);
-            // Use full window.
-//            GLES20.glViewport(0, 0, width, height);
-            // Simple orthographic projection, with (0,0) in lower-left corner.
-//            Matrix.orthoM(mDisplayProjectionMatrix, 0, 0, width, 0, height, -1, 1);
-
-            // Ready to go, start the camera.
-            Log.d(TAG, "starting camera preview");
-
             mediaPlayer.setSurface(new Surface(mCameraTexture));
-
         }
 
         @Override   // SurfaceTexture.OnFrameAvailableListener; runs on arbitrary thread
@@ -592,12 +537,9 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          * Draws the scene and submits the buffer.
          */
         private void draw() {
-//            Log.d(TAG, "frameAvailable draw texture start");
             GlUtil.checkGlError("draw start");
 
             for (Map.Entry<SurfaceHolder, WindowSurface> entry : windowSurfacesMap.entrySet()) {
-
-//                System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
                 WindowSurface windowSurface = entry.getValue();
                 windowSurface.makeCurrent();
                 int position = holderMap.get(entry.getKey());
@@ -730,14 +672,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         }
     }
 
-    public int getPreviewTexture() {
-        int textureId = -1;
-        if (textureId == GlUtil.NO_TEXTURE) {
-            textureId = GlUtil.createTextureObject(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
-        }
-        return textureId;
-    }
-
 
     HashMap<SurfaceHolder, Integer> holderMap = new HashMap<SurfaceHolder, Integer>();
 
@@ -832,19 +766,6 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
     @Override
     protected void onDestroy() {
         // destroy files
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-
-        if (mediaSurfaceTexture != null) {
-            mediaSurfaceTexture.release();
-        }
-
-        if (mEglCore != null) {
-            mEglCore.release();
-        }
-
         super.onDestroy();
     }
 }
