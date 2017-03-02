@@ -3,7 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextureView
+    <SurfaceView
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:id="@+id/texture_in_grid"
