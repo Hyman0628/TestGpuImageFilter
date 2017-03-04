@@ -77,11 +77,16 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
     };
     public static GPUImageFilterTools.FilterType[] arrImages=new GPUImageFilterTools.FilterType[]{
             NOFILTER, CONTRAST, GRAYSCALE,
-            SHARPEN, SEPIA, GAMMA,
-            THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS,
             NOFILTER, CONTRAST, GRAYSCALE,
-            SHARPEN, SEPIA, GAMMA,
-            THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS
+            NOFILTER, CONTRAST, GRAYSCALE,
+            NOFILTER, CONTRAST, GRAYSCALE,
+            NOFILTER, CONTRAST, GRAYSCALE,
+            NOFILTER, CONTRAST, GRAYSCALE
+//            SHARPEN, SEPIA, GAMMA,
+//            THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS,
+//            NOFILTER, CONTRAST, GRAYSCALE,
+//            SHARPEN, SEPIA, GAMMA,
+//            THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS
     };
 
     @Override
@@ -111,7 +116,8 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
     @Override   // SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceCreated holder=" + holder + " (static=" + ")");
+        Log.i(TAG, "surfaceCreated holder=" + holder.hashCode() + " (Surface=" +
+                holder.getSurface().hashCode() + ")");
 
         if (mRenderThread != null) {
             // Normal case -- render thread is running, tell it about the new surface.
@@ -126,20 +132,20 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
             // unpaused, but we track it anyway.  If the activity is un-paused and we start
             // the RenderThread, the SurfaceHolder will be passed in right after the thread
             // is created.
-            Log.d(TAG, "render thread not running");
+            Log.i(TAG, "render thread not running");
         }
     }
 
     @Override   // SurfaceHolder.Callback
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d(TAG, "surfaceChanged fmt=" + format + " size=" + width + "x" + height +
-                " holder=" + holder);
+        Log.i(TAG, "surfaceChanged fmt=" + format + " size=" + width + "x" + height +
+                " holder=" + holder.hashCode());
 
         if (mRenderThread != null) {
             RenderHandler rh = mRenderThread.getHandler();
             rh.sendSurfaceChanged(holder, format, width, height);
         } else {
-            Log.d(TAG, "Ignoring surfaceChanged");
+            Log.i(TAG, "Ignoring surfaceChanged");
             return;
         }
     }
@@ -151,7 +157,8 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
             RenderHandler rh = mRenderThread.getHandler();
             rh.sendSurfaceDestroyed(holder);
         }
-        Log.d(TAG, "surfaceDestroyed holder=" + holder);
+        holderMap.remove(holder);
+        Log.i(TAG, "surfaceDestroyed holder=" + holder.hashCode());
 //        sSurfaceHolder = null;
     }
 
@@ -164,7 +171,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume BEGIN");
+        Log.i(TAG, "onResume BEGIN");
         super.onResume();
 
         mRenderThread = new RenderThread(mHandler, this);
@@ -176,18 +183,18 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
         // FIXME i change here, remember to reset!
 //        if (sSurfaceHolder != null) {
-//            Log.d(TAG, "Sending previous surface");
+//            Log.i(TAG, "Sending previous surface");
 //            rh.sendSurfaceAvailable(sSurfaceHolder, false);
 //        } else {
-//            Log.d(TAG, "No previous surface");
+//            Log.i(TAG, "No previous surface");
 //        }
 
-        Log.d(TAG, "onResume END");
+        Log.i(TAG, "onResume END");
     }
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "onPause BEGIN");
+        Log.i(TAG, "onPause BEGIN");
         super.onPause();
 
         RenderHandler rh = mRenderThread.getHandler();
@@ -199,7 +206,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
             throw new RuntimeException("join was interrupted", ie);
         }
         mRenderThread = null;
-        Log.d(TAG, "onPause END");
+        Log.i(TAG, "onPause END");
     }
 
     /**
@@ -264,7 +271,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         public void handleMessage(Message msg) {
             MultiFilterPreviewActivity activity = mWeakActivity.get();
             if (activity == null) {
-                Log.d(TAG, "Got message for dead activity");
+                Log.i(TAG, "Got message for dead activity");
                 return;
             }
 
@@ -329,11 +336,12 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
             mEglCore = new EglCore(null, 0);
             mediaPlayer = MediaPlayer.create(activity, R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
             mediaPlayer.setLooping(true);
+            mediaPlayer.setVolume(0, 0);
             mediaPlayer.start();
 
             Looper.loop();
 
-            Log.d(TAG, "looper quit");
+            Log.i(TAG, "looper quit");
             mediaPlayer.release();
             releaseGl(null);
             mEglCore.release();
@@ -362,7 +370,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          * Shuts everything down.
          */
         private void shutdown() {
-            Log.d(TAG, "shutdown");
+            Log.i(TAG, "shutdown");
             Looper.myLooper().quit();
         }
 
@@ -384,10 +392,10 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         private FloatBuffer mGLCubeBuffer;
         private FloatBuffer mGLTextureBuffer;
 
-        GPUImageFilterGroup gpuImageFilter1;
-        GPUImageFilterGroup gpuImageFilter2;
+//        GPUImageFilterGroup gpuImageFilter1;
+//        GPUImageFilterGroup gpuImageFilter2;
 
-        HashSet<SurfaceHolder> holders = new HashSet<SurfaceHolder>();
+//        HashSet<SurfaceHolder> holders = new HashSet<SurfaceHolder>();
         HashMap<SurfaceHolder, WindowSurface> windowSurfacesMap = new HashMap<SurfaceHolder, WindowSurface>();
         HashMap<Integer, GPUImageFilterGroup> gpuImageFilters = new HashMap<Integer, GPUImageFilterGroup>();
 
@@ -398,24 +406,29 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          */
         private void surfaceAvailable(SurfaceHolder holder, boolean newSurface) {
 
-            if (holders.contains(holder)) {
-                // added before
-                Log.e(TAG, "surfaceAvailable holder contains should never comein");
-            }
-            holders.add(holder);
+            Log.i(TAG, "RenderThread surfaceCreated holder=" + holder.hashCode() + " (Surface=" +
+                    holder.getSurface().hashCode() + ")");
+//            if (holders.contains(holder)) {
+//                // added before
+//                Log.e(TAG, "surfaceAvailable holder contains should never comein");
+//            }
+//            holders.add(holder);
 
-            Surface surface = holder.getSurface();
-            WindowSurface mWindowSurface1 = new WindowSurface(mEglCore, surface, false);
-            windowSurfacesMap.put(holder, mWindowSurface1);
-            mWindowSurface1.makeCurrent();
+//            if (!windowSurfacesMap.containsKey(holder)) {
+                Surface surface = holder.getSurface();
+                WindowSurface mWindowSurface1 = new WindowSurface(mEglCore, surface, false);
+                synchronized (windowSurfacesMap) {
+                    windowSurfacesMap.put(holder, mWindowSurface1);
+                    mWindowSurface1.makeCurrent();
+                }
+//            }
 
-            if (holders.size() <= 1) {
+            if (windowSurfacesMap.size() <= 1) {
                 // only create once
 
                 mTextureId = getPreviewTexture();
-                Log.d(TAG, "mTextureId=" + mTextureId);
+                Log.i(TAG, "mTextureId=" + mTextureId);
                 mCameraTexture = new SurfaceTexture(mTextureId);
-
 
                 mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                         .order(ByteOrder.nativeOrder())
@@ -461,13 +474,21 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         private void releaseGl(SurfaceHolder surfaceHolder) {
             GlUtil.checkGlError("releaseGl start");
 
-            WindowSurface windowSurface = windowSurfacesMap.get(surfaceHolder);
-            if (windowSurface != null) {
-                windowSurface.release();
-            }
+//            synchronized (windowSurfacesMap) {
+                WindowSurface windowSurface = windowSurfacesMap.get(surfaceHolder);
+                if (windowSurface != null) {
+
+                    windowSurfacesMap.remove(surfaceHolder);
+                    windowSurface.release();
+//                holders.remove(surfaceHolder);
+//                    holderMap.remove(surfaceHolder);
+//                windowSurface.
+                }
+//            }
+
             GlUtil.checkGlError("releaseGl done");
 
-            mEglCore.makeNothingCurrent();
+//            mEglCore.makeNothingCurrent();
         }
 
         /**
@@ -478,11 +499,12 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          * be called.
          */
         private void surfaceChanged(SurfaceHolder surfaceHolder, int width, int height) {
-            Log.d(TAG, "RenderThread surfaceChanged " + width + "x" + height + ";surfaceHolder=" + surfaceHolder);
+            Log.i(TAG, "RenderThread surfaceChanged " + width + "x" + height + ";surfaceHolder=" + surfaceHolder.hashCode());
 
             mWindowSurfaceWidth = width;
             mWindowSurfaceHeight = height;
-            if (holders.size() <= 1) {
+            if (windowSurfacesMap.size() <= 1) {
+                Log.i(TAG, "surfaceChanged should only once here");
                 // create all filter
                 if (gpuImageFilters.size() > 0) {
                     gpuImageFilters.clear();
@@ -507,8 +529,9 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         private void surfaceDestroyed(SurfaceHolder surfaceHolder) {
             // In practice this never appears to be called -- the activity is always paused
             // before the surface is destroyed.  In theory it could be called though.
-            Log.d(TAG, "RenderThread surfaceDestroyed");
+//            Log.i(TAG, "RenderThread surfaceDestroyed holder=" + surfaceHolder.hashCode());
             releaseGl(surfaceHolder);
+//            Log.i(TAG, "RenderThread surfaceDestroyed done;holder=" + surfaceHolder.hashCode());
         }
 
         /**
@@ -537,19 +560,29 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          * Draws the scene and submits the buffer.
          */
         private void draw() {
-            GlUtil.checkGlError("draw start");
 
-            for (Map.Entry<SurfaceHolder, WindowSurface> entry : windowSurfacesMap.entrySet()) {
-                WindowSurface windowSurface = entry.getValue();
-                windowSurface.makeCurrent();
-                int position = holderMap.get(entry.getKey());
-                GPUImageFilterGroup filter = gpuImageFilters.get(position);
-                filter.onDraw(mTextureId, mGLCubeBuffer, mGLTextureBuffer);
-                windowSurface.swapBuffers();
-            }
 
-            GlUtil.checkGlError("draw done");
-            Log.d(TAG, "frameAvailable draw texture end");
+//            synchronized (windowSurfacesMap) {
+                for (Map.Entry<SurfaceHolder, WindowSurface> entry : windowSurfacesMap.entrySet()) {
+
+                    SurfaceHolder holder = entry.getKey();
+                    if (holder.getSurface().isValid()) {
+                        GlUtil.checkGlError("draw start >" + holder.hashCode());
+                        WindowSurface windowSurface = entry.getValue();
+                        windowSurface.makeCurrent();
+                        Integer position = holderMap.get(entry.getKey());
+                        GPUImageFilterGroup filter = gpuImageFilters.get(position);
+                        filter.onDraw(mTextureId, mGLCubeBuffer, mGLTextureBuffer);
+                        windowSurface.swapBuffers();
+                        GlUtil.checkGlError("draw done >" + holder.hashCode());
+                    }
+
+                }
+//            }
+
+
+
+//            Log.i(TAG, "frameAvailable draw texture end");
         }
 
     }
@@ -614,7 +647,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
          * Call from UI thread.
          */
         public void sendSurfaceDestroyed(SurfaceHolder holder) {
-            sendMessage(obtainMessage(MSG_SURFACE_DESTROYED));
+            sendMessage(obtainMessage(MSG_SURFACE_DESTROYED, 0, 0, holder));
         }
 
         /**
@@ -638,7 +671,7 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
         @Override  // runs on RenderThread
         public void handleMessage(Message msg) {
             int what = msg.what;
-            //Log.d(TAG, "RenderHandler [" + this + "]: what=" + what);
+            //Log.i(TAG, "RenderHandler [" + this + "]: what=" + what);
 
             RenderThread renderThread = mWeakRenderThread.get();
             if (renderThread == null) {
@@ -695,26 +728,25 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
+            ViewHolder viewHolder;
 
             if (convertView == null) {
                 LayoutInflater inflater = ((Activity)mContext).getLayoutInflater();
                 convertView = inflater.inflate(layoutResourceId, parent, false);
-                holder = new ViewHolder();
-                holder.textView = (TextView) convertView.findViewById(R.id.tv_title_in_grid);
-                holder.surfaceView = (SurfaceView) convertView.findViewById(R.id.texture_in_grid);
-                convertView.setTag(holder);
+                viewHolder = new ViewHolder();
+                viewHolder.textView = (TextView) convertView.findViewById(R.id.tv_title_in_grid);
+                viewHolder.surfaceView = (SurfaceView) convertView.findViewById(R.id.texture_in_grid);
+                convertView.setTag(viewHolder);
             } else {
-                holder = (ViewHolder) convertView.getTag();
+                viewHolder = (ViewHolder) convertView.getTag();
             }
 
-
-
             GridItem item = mGridData.get(position);
-            Log.d(TAG, "getView holder=" + holder + ";position=" + position);
-            holder.textView.setText(item.getTitle());
-            holder.surfaceView.getHolder().addCallback(MultiFilterPreviewActivity.this);
-            holderMap.put(holder.surfaceView.getHolder(), position);
+
+            viewHolder.textView.setText(item.getTitle());
+            viewHolder.surfaceView.getHolder().addCallback(MultiFilterPreviewActivity.this);
+            holderMap.put(viewHolder.surfaceView.getHolder(), position);
+            Log.i(TAG, "getView holder=" + viewHolder.surfaceView.getHolder().hashCode() + ";position=" + position);
             return convertView;
         }
 
