@@ -343,7 +343,14 @@ public class MultiFilterPreviewActivity extends Activity implements AdapterView.
 
             Log.i(TAG, "looper quit");
             mediaPlayer.release();
-            releaseGl(null);
+//            releaseGl(null);
+
+            if (gpuImageFilters.size() > 0) {
+                for (GPUImageFilterGroup gpuImageFilterGroup: gpuImageFilters.values()) {
+                    gpuImageFilterGroup.destroy();
+                }
+            }
+
             mEglCore.release();
 
             synchronized (mStartLock) {
