@@ -6,19 +6,15 @@ package com.example.baidu.testgpuimagefilter;
 
 import javax.microedition.khronos.opengles.GL10;
 
-import java.io.IOException;
 import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
+
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
-import android.util.Log;
 import android.view.Surface;
 
-import java.io.IOException;
-
+import jp.co.cyberagent.android.gpuimage.GPUImageExtRotationTexFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
 import jp.co.cyberagent.android.gpuimage.GPUImageRenderer;
@@ -33,6 +29,7 @@ class VideoSurfaceView extends GLSurfaceView {
         setEGLContextClientVersion(2);
         mMediaPlayer = mp;
         GPUImageFilterGroup filterGroup = new GPUImageFilterGroup();
+
         filterGroup.addFilter(new GPUImageExtTexFilter());
         filterGroup.addFilter(new GPUImageFilter());
         mRenderer = new GPUImageRenderer(filterGroup);

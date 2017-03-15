@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile files('libs/bdplayer.jar')
     compile project(':gpuimage')
 //    compile(name:'gpuimage',ext:'aar')
 }

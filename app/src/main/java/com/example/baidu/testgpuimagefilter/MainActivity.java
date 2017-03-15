@@ -2,23 +2,16 @@ package com.example.baidu.testgpuimagefilter;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.Toast;
 
+import jp.co.cyberagent.android.gpuimage.GPUImageExtRotationTexFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
-
-import static com.example.baidu.testgpuimagefilter.GPUImageFilterTools.createFilterForType;
 
 
 public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
@@ -143,7 +136,7 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
     public void initGLView() {
         RelativeLayout rlGlViewContainer = (RelativeLayout)findViewById(R.id.rlGlViewContainer);
-        mediaPlayer = MediaPlayer.create(this, R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
+        mediaPlayer = MediaPlayer.create(this, R.raw.we_chat_sight723);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();
         videoSurfaceView = new VideoSurfaceView(this, mediaPlayer);

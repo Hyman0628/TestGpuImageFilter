@@ -35,10 +35,12 @@ import jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -118,15 +120,44 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         }
     }
 
+    private float[] videoTextureTransform = new float[16];
+    boolean transformSetted = false;
     @Override
     public void onDrawFrame(final GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         runAll(mRunOnDraw);
-        mFilter.onDraw(mGLTextureId, mGLCubeBuffer, mGLTextureBuffer);
-        runAll(mRunOnDrawEnd);
         if (mSurfaceTexture != null) {
             mSurfaceTexture.updateTexImage();
         }
+
+        mSurfaceTexture.getTransformMatrix(videoTextureTransform);
+        if (videoTextureTransform[0] == 1 && videoTextureTransform[5] == -1) {
+            setRotation(Rotation.NORMAL, false, false);
+        } else if (videoTextureTransform[1] == 1 && videoTextureTransform[4] == 1) {
+            setRotation(Rotation.ROTATION_270, false, false);
+        } else if (videoTextureTransform[1] == -1 && videoTextureTransform[4] == -1) {
+            setRotation(Rotation.ROTATION_90, false, false);
+        } else if (videoTextureTransform[0] == -1 && videoTextureTransform[5] == 1) {
+            setRotation(Rotation.ROTATION_180, false, false);
+        }
+
+//        if (!transformSetted) {
+//                if (mFilter instanceof GPUImageFilterGroup) {
+//                    GPUImageFilterGroup fg = (GPUImageFilterGroup) mFilter;
+//                    for (GPUImageFilter filter: fg.getFilters()) {
+//                        if (filter instanceof GPUImageExtRotationTexFilter) {
+//                            GPUImageExtRotationTexFilter rotationTexFilter = (GPUImageExtRotationTexFilter) filter;
+//                            rotationTexFilter.setTexMatrix(videoTextureTransform);
+//                            transformSetted = true;
+//                        }
+//                    }
+//                }
+//        }
+        mFilter.onDraw(mGLTextureId, mGLCubeBuffer, mGLTextureBuffer);
+        runAll(mRunOnDrawEnd);
+
+
+        Log.d("TAG", "videoTextureTransform=" + Arrays.toString(videoTextureTransform));
     }
 
     /**
