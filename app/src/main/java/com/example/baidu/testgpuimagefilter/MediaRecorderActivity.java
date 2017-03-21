@@ -7,21 +7,26 @@ import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.List;
+
+import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
 
 /**
  * Created by baidu on 2017/3/9.
  */
 
 public class MediaRecorderActivity extends Activity implements View.OnClickListener{
+    public static final String TAG = "MediaRecorderActivity";
     // 程序中的两个按钮
     Button record , stop;
     // 系统的视频文件
@@ -86,12 +91,22 @@ public class MediaRecorderActivity extends Activity implements View.OnClickListe
                             .getExternalStorageDirectory()
                             .getCanonicalFile() + "/testrecordevideo" + System.currentTimeMillis() + ".mp4");
                     // 创建MediaPlayer对象
-                    mCamera = Camera.open(0);
-                    mRecorder = new MediaRecorder();
-                    mCamera.lock();
-                    mCamera.unlock();
-                    mRecorder.reset();
+                    int cameraId = 0;
+                    mCamera = Camera.open(cameraId);
+                    setCameraRotation(cameraId);
 //                    mCamera.setDisplayOrientation(90);
+                    mCamera.getParameters().setFocusMode(FOCUS_MODE_CONTINUOUS_VIDEO);
+                    final List<Camera.Size> mSupportedVideoSizes = getSupportedVideoSizes(mCamera);
+                    for (Camera.Size str : mSupportedVideoSizes)
+                        Log.e(TAG, "mSupportedVideoSizes "+str.width + ":" + str.height + " ... "
+                                + ((float) str.width / str.height));
+
+                    mRecorder = new MediaRecorder();
+//                    mCamera.lock();
+                    mCamera.unlock();
+//                    mRecorder.reset();
+//                    mCamera.setDisplayOrientation(90);
+
                     mRecorder.setCamera(mCamera);
                     // 设置从麦克风采集声音(或来自录像机的声音AudioSource.CAMCORDER)
                     mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -104,10 +119,11 @@ public class MediaRecorderActivity extends Activity implements View.OnClickListe
                     mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
                     // 设置图像编码的格式
                     mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+
                     mRecorder.setVideoSize(1280, 720);
                     // 每秒 4帧
-                    mRecorder.setVideoFrameRate(20);
-//                    mRecorder.setOrientationHint(90);
+//                    mRecorder.setVideoFrameRate(20); // 对于三星note3等一些手机，
+                    mRecorder.setOrientationHint(mRotate);
                     mRecorder.setOutputFile(videoFile.getAbsolutePath());
                     // 指定使用SurfaceView来预览视频
                     mRecorder.setPreviewDisplay(sView.getHolder().getSurface());  //①
@@ -145,6 +161,79 @@ public class MediaRecorderActivity extends Activity implements View.OnClickListe
                     stop.setEnabled(false);
                 }
                 break;
+        }
+    }
+
+    int mRotate;
+
+    public void setCameraRotation(int cameraId) {
+        try {
+
+            Camera.CameraInfo camInfo = new Camera.CameraInfo();
+
+            if (cameraId == 0)
+                Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, camInfo);
+            else
+                Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_FRONT, camInfo);
+            int cameraRotationOffset = camInfo.orientation;
+            // ...
+
+            Camera.Parameters parameters = mCamera.getParameters();
+
+
+            int rotation = ((Activity)this).getWindowManager().getDefaultDisplay().getRotation();
+            int degrees = 0;
+            switch (rotation) {
+                case Surface.ROTATION_0:
+                    degrees = 0;
+                    break; // Natural orientation
+                case Surface.ROTATION_90:
+                    degrees = 90;
+                    break; // Landscape left
+                case Surface.ROTATION_180:
+                    degrees = 180;
+                    break;// Upside down
+                case Surface.ROTATION_270:
+                    degrees = 270;
+                    break;// Landscape right
+            }
+            int displayRotation;
+            if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                displayRotation = (cameraRotationOffset + degrees) % 360;
+                displayRotation = (360 - displayRotation) % 360; // compensate
+                // the
+                // mirror
+            } else { // back-facing
+                displayRotation = (cameraRotationOffset - degrees + 360) % 360;
+            }
+
+            mCamera.setDisplayOrientation(displayRotation);
+
+            mRotate = 0;
+            if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                mRotate = (360 + cameraRotationOffset + degrees) % 360;
+            } else {
+                mRotate = (360 + cameraRotationOffset - degrees) % 360;
+            }
+
+            parameters.set("orientation", "portrait");
+            parameters.setRotation(mRotate);
+            mCamera.setParameters(parameters);
+
+        } catch (Exception e) {
+
+        }
+    }
+
+    public List<Camera.Size> getSupportedVideoSizes(Camera camera) {
+        if (camera.getParameters().getSupportedVideoSizes() != null) {
+            Log.d(TAG, "has multi getSupportedVideoSizes");
+            return camera.getParameters().getSupportedVideoSizes();
+        } else {
+            Log.d(TAG, "has no multi getSupportedVideoSizes, use getSupportedPreviewSizes");
+            // Video sizes may be null, which indicates that all the supported
+            // preview sizes are supported for video recording.
+            return camera.getParameters().getSupportedPreviewSizes();
         }
     }
 
