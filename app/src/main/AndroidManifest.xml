@@ -15,7 +15,13 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".MultiFilterPreviewActivity"></activity>
         <activity android:name=".MultiFilterTexturePreviewActivity"></activity>
         <activity android:name=".MediaRecorderActivity">
@@ -27,11 +33,7 @@
         <activity
             android:name=".MuxMultiMp4Activity"
             android:label="@string/title_activity_mux_multi_mp4">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 

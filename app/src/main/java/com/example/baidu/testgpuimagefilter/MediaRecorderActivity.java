@@ -2,8 +2,12 @@ package com.example.baidu.testgpuimagefilter;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,10 +20,16 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+import static android.os.Build.VERSION_CODES.M;
 
 /**
  * Created by baidu on 2017/3/9.
@@ -67,6 +77,8 @@ public class MediaRecorderActivity extends Activity implements View.OnClickListe
         sView.getHolder().setFixedSize(1280, 720);
         // 设置该组件让屏幕不会自动关闭
         sView.getHolder().setKeepScreenOn(true);
+
+        getSingInfo();
     }
 
     @Override
@@ -112,13 +124,16 @@ public class MediaRecorderActivity extends Activity implements View.OnClickListe
                     mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                     // 设置从摄像头采集图像
                     mRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+                    mRecorder.setProfile(CamcorderProfile
+                            .get(CamcorderProfile.QUALITY_720P));
                     // 设置视频文件的输出格式
                     // 必须在设置声音编码格式、图像编码格式之前设置
-                    mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+//                    mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4); // 与profile设置冲突
                     // 设置声音编码的格式
-                    mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+//                    mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB); // 与profile设置冲突
                     // 设置图像编码的格式
-                    mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+//                    mRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264); // 与profile设置冲突
+                    mRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
 
                     mRecorder.setVideoSize(1280, 720);
                     // 每秒 4帧
@@ -234,6 +249,32 @@ public class MediaRecorderActivity extends Activity implements View.OnClickListe
             // Video sizes may be null, which indicates that all the supported
             // preview sizes are supported for video recording.
             return camera.getParameters().getSupportedPreviewSizes();
+        }
+    }
+
+    public void getSingInfo() {
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(
+                    this.getPackageName(), PackageManager.GET_SIGNATURES);
+            Signature[] signs = packageInfo.signatures;
+            Signature sign = signs[0];
+            parseSignature(sign.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void parseSignature(byte[] signature) {
+        try {
+            CertificateFactory certFactory = CertificateFactory
+                    .getInstance("X.509");
+            X509Certificate cert = (X509Certificate) certFactory
+                    .generateCertificate(new ByteArrayInputStream(signature));
+            String pubKey = cert.getPublicKey().toString();
+            String signNumber = cert.getSerialNumber().toString();
+            Log.d(TAG, "pubKey = " + pubKey + ";signNumber=" + signNumber);
+        } catch (CertificateException e) {
+            e.printStackTrace();
         }
     }
 

@@ -157,7 +157,7 @@ public class GPUImageRenderer implements Renderer, PreviewCallback {
         runAll(mRunOnDrawEnd);
 
 
-        Log.d("TAG", "videoTextureTransform=" + Arrays.toString(videoTextureTransform));
+//        Log.d("TAG", "videoTextureTransform=" + Arrays.toString(videoTextureTransform));
     }
 
     /**

@@ -179,7 +179,7 @@ public class ExtractDecodeTest {
                 // We avoid the device-specific limitations on width and height by using values
                 // that are multiples of 16, which all tested devices seem to be able to handle.
                 // Create a MediaCodec for the decoder, based on the extractor's format.
-                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType);
+                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType, 480, 360);
 //                outputSurface.changeFragmentShader(FRAGMENT_SHADER);
                 videoDecoder = createVideoDecoder(inputFormat, outputSurface.getSurface());
             }

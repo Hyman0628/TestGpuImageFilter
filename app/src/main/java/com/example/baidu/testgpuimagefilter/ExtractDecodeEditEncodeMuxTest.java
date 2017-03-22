@@ -15,6 +15,7 @@ import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.os.Environment;
 import android.os.HandlerThread;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Surface;
 import java.io.File;
@@ -122,8 +123,8 @@ public class ExtractDecodeEditEncodeMuxTest {
         mFilterType = filterType;
     }
     public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
-        setSize(480, 360);
-        setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);
+        setSize(1280, 720);
+        setSource(R.raw.same442);
         setCopyAudio();
         setCopyVideo();
 //        TestWrapper.runTest(this);
@@ -210,7 +211,7 @@ public class ExtractDecodeEditEncodeMuxTest {
         sb.append(getClass().getSimpleName());
 //        assertTrue("should have called setSource() first", mSourceResId != -1);
         sb.append('-');
-        sb.append(mSourceResId);
+        sb.append(System.currentTimeMillis());
         if (mCopyVideo) {
 //            assertTrue("should have called setSize() first", mWidth != -1);
 //            assertTrue("should have called setSize() first", mHeight != -1);
@@ -228,6 +229,8 @@ public class ExtractDecodeEditEncodeMuxTest {
         sb.append(".mp4");
         mOutputFile = sb.toString();
     }
+
+    private int mVideoOrientation = 0;
     /**
      * Tests encoding and subsequently decoding video from frames generated into a buffer.
      * <p>
@@ -278,16 +281,25 @@ public class ExtractDecodeEditEncodeMuxTest {
                 outputVideoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, OUTPUT_VIDEO_FRAME_RATE);
                 outputVideoFormat.setInteger(
                         MediaFormat.KEY_I_FRAME_INTERVAL, OUTPUT_VIDEO_IFRAME_INTERVAL);
+                mVideoOrientation = inputFormat.getInteger(MediaFormat.KEY_ROTATION);
+                Log.d(TAG, "inputFormat KEY_ROTATION=" + mVideoOrientation);
+                outputVideoFormat.setInteger(MediaFormat.KEY_ROTATION, mVideoOrientation);
                 if (VERBOSE) Log.d(TAG, "video format: " + outputVideoFormat);
                 // Create a MediaCodec for the desired codec, then configure it as an encoder with
                 // our desired properties. Request a Surface to use for input.
+
                 AtomicReference<Surface> inputSurfaceReference = new AtomicReference<Surface>();
                 videoEncoder = createVideoEncoder(
                         videoCodecInfo, outputVideoFormat, inputSurfaceReference);
+                videoEncoder.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
                 inputSurface = new InputSurface(inputSurfaceReference.get());
                 inputSurface.makeCurrent();
+
+                int width = inputFormat.getInteger(MediaFormat.KEY_WIDTH);
+                int height = inputFormat.getInteger(MediaFormat.KEY_HEIGHT);
+                Log.d(TAG, "current origin width = " + width + "; origin height=" + height);
                 // Create a MediaCodec for the decoder, based on the extractor's format.
-                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType);
+                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType, width, height);
 //                outputSurface.changeFragmentShader(FRAGMENT_SHADER);
                 videoDecoder = createVideoDecoder(inputFormat, outputSurface.getSurface());
             }
@@ -310,6 +322,7 @@ public class ExtractDecodeEditEncodeMuxTest {
             }
             // Creates a muxer but do not start or add tracks just yet.
             muxer = createMuxer();
+            muxer.setOrientationHint(mVideoOrientation);
             doExtractDecodeEditEncodeMux(
                     videoExtractor,
                     audioExtractor,

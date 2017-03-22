@@ -83,7 +83,7 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
      * Creates an OutputSurface using the current EGL context.  Creates a Surface that can be
      * passed to MediaCodec.configure().
      */
-    public OutputSurfaceWithFilter(Context context, GPUImageFilterTools.FilterType filterType) {
+    public OutputSurfaceWithFilter(Context context, GPUImageFilterTools.FilterType filterType, int width, int height) {
         mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
@@ -93,13 +93,13 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         mGLTextureBuffer.put(TEXTURE_NO_ROTATION).position(0);
-        setup(context, filterType);
+        setup(context, filterType, width, height);
     }
     /**
      * Creates instances of TextureRender and SurfaceTexture, and a Surface associated
      * with the SurfaceTexture.
      */
-    private void setup(Context context, GPUImageFilterTools.FilterType filterType) {
+    private void setup(Context context, GPUImageFilterTools.FilterType filterType, int width, int height) {
         gpuImageFilter = new GPUImageFilterGroup();
         gpuImageFilter.addFilter(new GPUImageExtTexFilter());
         GPUImageFilter filter = GPUImageFilterTools.createFilterForType(context, filterType);
@@ -111,7 +111,7 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
         gpuImageFilter.init();
 //        GLES20.glViewport(0, 0, 480, 360);
         GLES20.glUseProgram(gpuImageFilter.getProgram());
-        gpuImageFilter.onOutputSizeChanged(480, 360); // width&height not changed by filter
+        gpuImageFilter.onOutputSizeChanged(width, height); // width&height not changed by filter
 
 
         int[] textures = new int[1];
