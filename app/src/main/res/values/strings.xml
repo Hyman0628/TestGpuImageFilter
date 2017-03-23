@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TestGpuImageFilter</string>
+    <string name="title_activity_mux_multi_mp4">MuxMultiMp4Activity</string>
 </resources>

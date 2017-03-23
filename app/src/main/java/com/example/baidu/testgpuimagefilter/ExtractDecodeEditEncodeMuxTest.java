@@ -12,6 +12,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaMuxer;
 import android.os.Environment;
 import android.os.HandlerThread;
@@ -55,18 +56,18 @@ public class ExtractDecodeEditEncodeMuxTest {
     private static final File OUTPUT_FILENAME_DIR = Environment.getExternalStorageDirectory();
     // parameters for the video encoder
     private static final String OUTPUT_VIDEO_MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
-    private static final int OUTPUT_VIDEO_BIT_RATE = 500000; // 2Mbps
+    private static final int OUTPUT_VIDEO_BIT_RATE = 3000000; // 2Mbps
     private static final int OUTPUT_VIDEO_FRAME_RATE = 15; // 15fps
     private static final int OUTPUT_VIDEO_IFRAME_INTERVAL = 10; // 10 seconds between I-frames
     private static final int OUTPUT_VIDEO_COLOR_FORMAT =
             MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
     // parameters for the audio encoder
     private static final String OUTPUT_AUDIO_MIME_TYPE = "audio/mp4a-latm"; // Advanced Audio Coding
-    private static final int OUTPUT_AUDIO_CHANNEL_COUNT = 2; // Must match the input stream.
-    private static final int OUTPUT_AUDIO_BIT_RATE = 128 * 1024;
+    private static final int OUTPUT_AUDIO_CHANNEL_COUNT = 1; // Must match the input stream.
+    private static final int OUTPUT_AUDIO_BIT_RATE = 90 * 1024;
     private static final int OUTPUT_AUDIO_AAC_PROFILE =
             MediaCodecInfo.CodecProfileLevel.AACObjectHE;
-    private static final int OUTPUT_AUDIO_SAMPLE_RATE_HZ = 44100; // Must match the input stream.
+    private static final int OUTPUT_AUDIO_SAMPLE_RATE_HZ = 16000; // Must match the input stream.
     /**
      * Used for editing the frames.
      *
@@ -124,7 +125,7 @@ public class ExtractDecodeEditEncodeMuxTest {
     }
     public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
         setSize(1280, 720);
-        setSource(R.raw.same442);
+        setSource(R.raw.ori13637);
         setCopyAudio();
         setCopyVideo();
 //        TestWrapper.runTest(this);
@@ -263,6 +264,9 @@ public class ExtractDecodeEditEncodeMuxTest {
         MediaCodec audioEncoder = null;
         MediaMuxer muxer = null;
         InputSurface inputSurface = null;
+
+        MediaMetadataRetriever retriever = createMediaMetadataRetriever();
+//        Log.d(TAG, "retriever format = " + retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
         try {
             if (mCopyVideo) {
                 videoExtractor = createExtractor();
@@ -271,6 +275,18 @@ public class ExtractDecodeEditEncodeMuxTest {
                 MediaFormat inputFormat = videoExtractor.getTrackFormat(videoInputTrack);
                 // We avoid the device-specific limitations on width and height by using values
                 // that are multiples of 16, which all tested devices seem to be able to handle.
+                Log.d(TAG, "video inputFormat:" + inputFormat.toString());
+                try {
+                    mVideoOrientation = inputFormat.getInteger(MediaFormat.KEY_ROTATION);
+                } catch (Exception e) {
+                }
+
+                if (mVideoOrientation == 90 || mVideoOrientation == 270) {
+                    int tempS = mHeight;
+                    mHeight = mWidth;
+                    mWidth = tempS;
+                }
+
                 MediaFormat outputVideoFormat =
                         MediaFormat.createVideoFormat(OUTPUT_VIDEO_MIME_TYPE, mWidth, mHeight);
                 // Set some properties. Failing to specify some of these can cause the MediaCodec
@@ -278,10 +294,12 @@ public class ExtractDecodeEditEncodeMuxTest {
                 outputVideoFormat.setInteger(
                         MediaFormat.KEY_COLOR_FORMAT, OUTPUT_VIDEO_COLOR_FORMAT);
                 outputVideoFormat.setInteger(MediaFormat.KEY_BIT_RATE, OUTPUT_VIDEO_BIT_RATE);
+//                outputVideoFormat.setInteger(MediaFormat.KEY_BIT_RATE, inputFormat.getInteger(MediaFormat.KEY_BIT_RATE));
                 outputVideoFormat.setInteger(MediaFormat.KEY_FRAME_RATE, OUTPUT_VIDEO_FRAME_RATE);
                 outputVideoFormat.setInteger(
                         MediaFormat.KEY_I_FRAME_INTERVAL, OUTPUT_VIDEO_IFRAME_INTERVAL);
-                mVideoOrientation = inputFormat.getInteger(MediaFormat.KEY_ROTATION);
+
+
                 Log.d(TAG, "inputFormat KEY_ROTATION=" + mVideoOrientation);
                 outputVideoFormat.setInteger(MediaFormat.KEY_ROTATION, mVideoOrientation);
                 if (VERBOSE) Log.d(TAG, "video format: " + outputVideoFormat);
@@ -299,7 +317,7 @@ public class ExtractDecodeEditEncodeMuxTest {
                 int height = inputFormat.getInteger(MediaFormat.KEY_HEIGHT);
                 Log.d(TAG, "current origin width = " + width + "; origin height=" + height);
                 // Create a MediaCodec for the decoder, based on the extractor's format.
-                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType, width, height);
+                outputSurface = new OutputSurfaceWithFilter(mAppContext, mFilterType, width, height, mVideoOrientation);
 //                outputSurface.changeFragmentShader(FRAGMENT_SHADER);
                 videoDecoder = createVideoDecoder(inputFormat, outputSurface.getSurface());
             }
@@ -308,10 +326,11 @@ public class ExtractDecodeEditEncodeMuxTest {
                 int audioInputTrack = getAndSelectAudioTrackIndex(audioExtractor);
                 assertTrue("missing audio track in test video", audioInputTrack != -1);
                 MediaFormat inputFormat = audioExtractor.getTrackFormat(audioInputTrack);
+                Log.d(TAG, "audio inputFormat:" + inputFormat.toString());
                 MediaFormat outputAudioFormat =
                         MediaFormat.createAudioFormat(
-                                OUTPUT_AUDIO_MIME_TYPE, OUTPUT_AUDIO_SAMPLE_RATE_HZ,
-                                OUTPUT_AUDIO_CHANNEL_COUNT);
+                                OUTPUT_AUDIO_MIME_TYPE, inputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE),
+                                inputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
                 outputAudioFormat.setInteger(MediaFormat.KEY_BIT_RATE, OUTPUT_AUDIO_BIT_RATE);
                 outputAudioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, OUTPUT_AUDIO_AAC_PROFILE);
                 // Create a MediaCodec for the desired codec, then configure it as an encoder with
@@ -322,7 +341,7 @@ public class ExtractDecodeEditEncodeMuxTest {
             }
             // Creates a muxer but do not start or add tracks just yet.
             muxer = createMuxer();
-            muxer.setOrientationHint(mVideoOrientation);
+//            muxer.setOrientationHint(mVideoOrientation);
             doExtractDecodeEditEncodeMux(
                     videoExtractor,
                     audioExtractor,
@@ -453,6 +472,20 @@ public class ExtractDecodeEditEncodeMuxTest {
                 srcFd.getLength());
         return extractor;
     }
+
+
+    /**
+     * Creates an extractor that reads its frames from {@link #mSourceResId}.
+     */
+    private MediaMetadataRetriever createMediaMetadataRetriever() throws IOException {
+        MediaMetadataRetriever retriever;
+        AssetFileDescriptor srcFd = mAppContext.getResources().openRawResourceFd(mSourceResId);
+        retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(srcFd.getFileDescriptor(), srcFd.getStartOffset(),
+                srcFd.getLength());
+        return retriever;
+    }
+
     /**
      * Creates a decoder for the given format, which outputs to the given surface.
      *

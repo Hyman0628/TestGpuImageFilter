@@ -27,6 +27,7 @@ import jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil;
 
 import static android.R.attr.height;
 import static android.R.attr.width;
+import static com.example.baidu.testgpuimagefilter.GPUImageExtRotationTexFilter.FULL_RECTANGLE_TEX_COORDS;
 import static jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil.TEXTURE_NO_ROTATION;
 
 /**
@@ -83,25 +84,29 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
      * Creates an OutputSurface using the current EGL context.  Creates a Surface that can be
      * passed to MediaCodec.configure().
      */
-    public OutputSurfaceWithFilter(Context context, GPUImageFilterTools.FilterType filterType, int width, int height) {
+    public OutputSurfaceWithFilter(Context context, GPUImageFilterTools.FilterType filterType, int width, int height, int orientation) {
         mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         mGLCubeBuffer.put(CUBE).position(0);
 
-        mGLTextureBuffer = ByteBuffer.allocateDirect(TEXTURE_NO_ROTATION.length * 4)
+        mGLTextureBuffer = ByteBuffer.allocateDirect(FULL_RECTANGLE_TEX_COORDS.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        mGLTextureBuffer.put(TEXTURE_NO_ROTATION).position(0);
-        setup(context, filterType, width, height);
+        mGLTextureBuffer.put(FULL_RECTANGLE_TEX_COORDS).position(0);
+        setup(context, filterType, width, height, orientation);
     }
+
+    float[] mSTMatrix = new float[16];
     /**
      * Creates instances of TextureRender and SurfaceTexture, and a Surface associated
      * with the SurfaceTexture.
      */
-    private void setup(Context context, GPUImageFilterTools.FilterType filterType, int width, int height) {
+    private void setup(Context context, GPUImageFilterTools.FilterType filterType, int width, int height, int orientation) {
         gpuImageFilter = new GPUImageFilterGroup();
-        gpuImageFilter.addFilter(new GPUImageExtTexFilter());
+        GPUImageExtRotationTexFilter extRotationTexFilter = new GPUImageExtRotationTexFilter();
+        extRotationTexFilter.setTexMatrix(mSTMatrix);
+        gpuImageFilter.addFilter(extRotationTexFilter);
         GPUImageFilter filter = GPUImageFilterTools.createFilterForType(context, filterType);
         gpuImageFilter.addFilter(filter);
 
@@ -111,6 +116,13 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
         gpuImageFilter.init();
 //        GLES20.glViewport(0, 0, 480, 360);
         GLES20.glUseProgram(gpuImageFilter.getProgram());
+
+        // swich when diff
+        if (orientation == 90 || orientation == 270) {
+            int tmpS = height;
+            height = width;
+            width = tmpS;
+        }
         gpuImageFilter.onOutputSizeChanged(width, height); // width&height not changed by filter
 
 
@@ -282,6 +294,7 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
         // Latch the data.
         checkGlError("before updateTexImage");
         mSurfaceTexture.updateTexImage();
+        mSurfaceTexture.getTransformMatrix(mSTMatrix);
     }
     /**
      * Draws the data from SurfaceTexture onto the current EGL surface.
