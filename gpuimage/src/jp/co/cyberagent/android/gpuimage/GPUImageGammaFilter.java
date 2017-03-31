@@ -23,13 +23,13 @@ import android.opengl.GLES20;
  */
 public class GPUImageGammaFilter extends GPUImageFilter {
     public static final String GAMMA_FRAGMENT_SHADER = "" +
-            "#extension GL_OES_EGL_image_external : require\n" +
-            "varying highp vec2 textureCoordinate;\n" +
-            " \n" +
-            "uniform samplerExternalOES inputImageTexture;\n" +
+//            "#extension GL_OES_EGL_image_external : require\n" +
 //            "varying highp vec2 textureCoordinate;\n" +
 //            " \n" +
-//            " uniform sampler2D inputImageTexture;\n" +
+//            "uniform samplerExternalOES inputImageTexture;\n" +
+            "varying highp vec2 textureCoordinate;\n" +
+            " \n" +
+            " uniform sampler2D inputImageTexture;\n" +
             " uniform lowp float gamma;\n" +
             " \n" +
             " void main()\n" +

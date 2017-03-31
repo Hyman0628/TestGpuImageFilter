@@ -11,6 +11,7 @@ import android.view.Surface;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -47,7 +48,7 @@ import static jp.co.cyberagent.android.gpuimage.util.TextureRotationUtil.TEXTURE
  */
 class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener {
     private static final String TAG = "OutputSurface";
-    private static final boolean VERBOSE = true;
+    private static final boolean VERBOSE = false;
     private static final int EGL_OPENGL_ES2_BIT = 4;
     private EGL10 mEGL;
     private EGLDisplay mEGLDisplay;
@@ -84,7 +85,7 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
      * Creates an OutputSurface using the current EGL context.  Creates a Surface that can be
      * passed to MediaCodec.configure().
      */
-    public OutputSurfaceWithFilter(Context context, GPUImageFilterTools.FilterType filterType, int width, int height, int orientation) {
+    public OutputSurfaceWithFilter(Context context, ArrayList<GPUImageFilter> filterType, int width, int height, int orientation) {
         mGLCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
@@ -102,13 +103,18 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
      * Creates instances of TextureRender and SurfaceTexture, and a Surface associated
      * with the SurfaceTexture.
      */
-    private void setup(Context context, GPUImageFilterTools.FilterType filterType, int width, int height, int orientation) {
-        gpuImageFilter = new GPUImageFilterGroup();
+    private void setup(Context context, ArrayList<GPUImageFilter> filterType, int width, int height, int orientation) {
+
+        ArrayList<GPUImageFilter> filters = new ArrayList<GPUImageFilter>();
         GPUImageExtRotationTexFilter extRotationTexFilter = new GPUImageExtRotationTexFilter();
         extRotationTexFilter.setTexMatrix(mSTMatrix);
-        gpuImageFilter.addFilter(extRotationTexFilter);
-        GPUImageFilter filter = GPUImageFilterTools.createFilterForType(context, filterType);
-        gpuImageFilter.addFilter(filter);
+        filters.add(extRotationTexFilter);
+        filters.addAll(filterType);
+        gpuImageFilter = new GPUImageFilterGroup(filters);
+
+//        gpuImageFilter.addFilter(extRotationTexFilter);
+//        GPUImageFilter filter = GPUImageFilterTools.createFilterForType(context, filterType);
+//        gpuImageFilter.addFilter(filter);
 
         GLES20.glClearColor(0, 0, 0, 1);
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
@@ -276,7 +282,7 @@ class OutputSurfaceWithFilter implements SurfaceTexture.OnFrameAvailableListener
         final int TIMEOUT_MS = 500;
         synchronized (mFrameSyncObject) {
             while (!mFrameAvailable) {
-                try {
+                    try {
                     // Wait for onFrameAvailable() to signal us.  Use a timeout to avoid
                     // stalling the test if it doesn't arrive.
                     mFrameSyncObject.wait(TIMEOUT_MS);

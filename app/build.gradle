@@ -5,8 +5,8 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.example.baidu.testgpuimagefilter"
-        minSdkVersion 18
-        targetSdkVersion 24
+        minSdkVersion 16
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
 //        externalNativeBuild {

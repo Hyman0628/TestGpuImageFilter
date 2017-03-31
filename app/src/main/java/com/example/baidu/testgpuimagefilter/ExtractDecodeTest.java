@@ -21,7 +21,10 @@ import android.view.Surface;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -93,11 +96,11 @@ public class ExtractDecodeTest {
     /** The destination file for the encoded output. */
 //    private String mOutputFile;
 
-    private GPUImageFilterTools.FilterType mFilterType = GPUImageFilterTools.FilterType.NOFILTER;
+    private ArrayList<GPUImageFilter> mFilterType;
 //    private int mFilterAjust = 0; // not use now
-    public void setFilterType(GPUImageFilterTools.FilterType filterType) {
-        mFilterType = filterType;
-    }
+//    public void setFilterType(GPUImageFilterTools.FilterType filterType) {
+//        mFilterType = filterType;
+//    }
     public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
         setSize(480, 360);
         setSource(R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz);

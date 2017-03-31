@@ -9,6 +9,9 @@ import android.opengl.EGL14;
         import android.opengl.EGLSurface;
         import android.util.Log;
         import android.view.Surface;
+
+import javax.microedition.khronos.egl.EGL10;
+
 /**
  * Holds state associated with a Surface used for MediaCodec encoder input.
  * <p>

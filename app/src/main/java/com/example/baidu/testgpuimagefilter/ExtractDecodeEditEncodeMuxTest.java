@@ -22,7 +22,10 @@ import android.view.Surface;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -49,14 +52,14 @@ public class ExtractDecodeEditEncodeMuxTest {
         mAppContext = context.getApplicationContext();
     }
     private static final String TAG = ExtractDecodeEditEncodeMuxTest.class.getSimpleName();
-    private static final boolean VERBOSE = true; // lots of logging
+    private static final boolean VERBOSE = false; // lots of logging
     /** How long to wait for the next buffer to become available. */
     private static final int TIMEOUT_USEC = 10000;
     /** Where to output the test files. */
     private static final File OUTPUT_FILENAME_DIR = Environment.getExternalStorageDirectory();
     // parameters for the video encoder
     private static final String OUTPUT_VIDEO_MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
-    private static final int OUTPUT_VIDEO_BIT_RATE = 3000000; // 2Mbps
+    private static final int OUTPUT_VIDEO_BIT_RATE = 2000000; // 2Mbps
     private static final int OUTPUT_VIDEO_FRAME_RATE = 15; // 15fps
     private static final int OUTPUT_VIDEO_IFRAME_INTERVAL = 10; // 10 seconds between I-frames
     private static final int OUTPUT_VIDEO_COLOR_FORMAT =
@@ -66,7 +69,7 @@ public class ExtractDecodeEditEncodeMuxTest {
     private static final int OUTPUT_AUDIO_CHANNEL_COUNT = 1; // Must match the input stream.
     private static final int OUTPUT_AUDIO_BIT_RATE = 90 * 1024;
     private static final int OUTPUT_AUDIO_AAC_PROFILE =
-            MediaCodecInfo.CodecProfileLevel.AACObjectHE;
+            MediaCodecInfo.CodecProfileLevel.AACObjectLC;
     private static final int OUTPUT_AUDIO_SAMPLE_RATE_HZ = 16000; // Must match the input stream.
     /**
      * Used for editing the frames.
@@ -118,13 +121,13 @@ public class ExtractDecodeEditEncodeMuxTest {
 //        TestWrapper.runTest(this);
 //    }
 
-    private GPUImageFilterTools.FilterType mFilterType = GPUImageFilterTools.FilterType.NOFILTER;
+    private ArrayList<GPUImageFilter> mFilterType;
     private int mFilterAjust = 0; // not use now
-    public void setFilterType(GPUImageFilterTools.FilterType filterType) {
+    public void setFilterType(ArrayList<GPUImageFilter> filterType) {
         mFilterType = filterType;
     }
     public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
-        setSize(1280, 720);
+        setSize(1024, 768);
         setSource(R.raw.ori13637);
         setCopyAudio();
         setCopyVideo();
@@ -135,7 +138,9 @@ public class ExtractDecodeEditEncodeMuxTest {
 //                super.run();
                 setOutputFile();
                 try {
+                    long startTime = System.currentTimeMillis();
                     extractDecodeEditEncodeMux();
+                    Log.d(TAG, "generate time consuming:" + (System.currentTimeMillis() - startTime) + "ms");
                     resultListener.onResult(true, "no ErrorDesc now");
                 } catch (Throwable e) {
                     e.printStackTrace();
@@ -301,7 +306,7 @@ public class ExtractDecodeEditEncodeMuxTest {
 
 
                 Log.d(TAG, "inputFormat KEY_ROTATION=" + mVideoOrientation);
-                outputVideoFormat.setInteger(MediaFormat.KEY_ROTATION, mVideoOrientation);
+//                outputVideoFormat.setInteger(MediaFormat.KEY_ROTATION, mVideoOrientation);
                 if (VERBOSE) Log.d(TAG, "video format: " + outputVideoFormat);
                 // Create a MediaCodec for the desired codec, then configure it as an encoder with
                 // our desired properties. Request a Surface to use for input.

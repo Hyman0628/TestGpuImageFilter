@@ -4,14 +4,25 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import jp.co.cyberagent.android.gpuimage.GPUImageExtRotationTexFilter;
+import java.util.ArrayList;
+
+import jp.co.cyberagent.android.gpuimage.GPUImageBrightnessFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageExposureFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
+import jp.co.cyberagent.android.gpuimage.GPUImageGammaFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageHighlightShadowFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageRGBFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSaturationFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageWhiteBalanceFilter;
 
 
 public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
@@ -38,6 +49,9 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
          */
         initGLView();
 
+
+        // FIXME add for test
+//        findViewById(R.id.btnGenerate).performClick();
     }
 
     private volatile boolean isGenerating = false;
@@ -73,6 +87,7 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
                                 isGenerating = false;
                                 Toast.makeText(MainActivity.this, success? "Generate Sucess!" : "GenerateFailed! reason="
                                         + extra, Toast.LENGTH_LONG).show();
+                                Log.i("tag", "==========================!!!!!!done!!!!!!!!===================");
                             }
                         });
 
@@ -81,7 +96,8 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
                 // do effect-reencode
                 ExtractDecodeEditEncodeMuxTest test = new ExtractDecodeEditEncodeMuxTest(MainActivity.this);
                 try {
-                    test.setFilterType(currentFilterType);
+
+                    test.setFilterType(generateGPUImageFilter(FilterBean.formatFromJsonStr(FilterBean.TEST_YIDE_2)));
                     test.testExtractDecodeEditEncodeMuxAudioVideo(resultListener);
 
                 } catch (Throwable tr) {
@@ -90,6 +106,55 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
                 break;
 
         }
+    }
+
+
+
+    private ArrayList<GPUImageFilter> generateGPUImageFilter(FilterBean item) {
+        ArrayList<GPUImageFilter> filterArrayList = new ArrayList<>();
+
+        GPUImageRGBFilter gpuImageRGBFilter = new GPUImageRGBFilter(item.getRed1() / 100, item.getGreen1() / 100, item.getBlue1() / 100);
+        filterArrayList.add(gpuImageRGBFilter);
+
+        /*GPUImageHighlightShadowTintFilter highlightShadowTintFilter0 = new GPUImageHighlightShadowTintFilter();
+        highlightShadowTintFilter0.setmShadowTintColorRed(item.getRed2() / 100, 0, 0, 1);
+        highlightShadowTintFilter0.setmHighlightTintColorRed(item.getRed0() / 100, 0, 0, 1);
+        filterArrayList.add(highlightShadowTintFilter0);
+
+        GPUImageHighlightShadowTintFilter highlightShadowTintFilter1 = new GPUImageHighlightShadowTintFilter();
+        highlightShadowTintFilter1.setmShadowTintColorRed(0, item.getGreen2() / 100, 0, 1);
+        highlightShadowTintFilter1.setmHighlightTintColorRed(0, item.getGreen0() / 100, 0, 1);
+        filterArrayList.add(highlightShadowTintFilter1);
+
+        GPUImageHighlightShadowTintFilter highlightShadowTintFilter2 = new GPUImageHighlightShadowTintFilter();
+        highlightShadowTintFilter2.setmShadowTintColorRed(0, 0, item.getBlue2() / 100, 1);
+        highlightShadowTintFilter2.setmHighlightTintColorRed(0, 0, item.getBlue0() / 100, 1);
+        filterArrayList.add(highlightShadowTintFilter2);*/
+
+        GPUImageExposureFilter gpuImageExposureFilter = new GPUImageExposureFilter(item.getExposure() / 100);
+        filterArrayList.add(gpuImageExposureFilter);
+
+        GPUImageGammaFilter gpuImageGammaFilter = new GPUImageGammaFilter(item.getGamma() / 100);
+        filterArrayList.add(gpuImageGammaFilter);
+
+        GPUImageWhiteBalanceFilter gpuImageWhiteBalanceFilter = new GPUImageWhiteBalanceFilter(item.getWhiteBalance() * 100, 0.0f);
+        filterArrayList.add(gpuImageWhiteBalanceFilter);
+
+        GPUImageContrastFilter gpuImageContrastFilter = new GPUImageContrastFilter(item.getContrast() / 100);
+        filterArrayList.add(gpuImageContrastFilter);
+
+        GPUImageSaturationFilter gpuImageSaturationFilter = new GPUImageSaturationFilter(item.getSaturation() / 100);
+        filterArrayList.add(gpuImageSaturationFilter);
+
+        GPUImageSharpenFilter gpuImageSharpenFilter = new GPUImageSharpenFilter(item.getSharpen() / 100);
+        filterArrayList.add(gpuImageSharpenFilter);
+
+        GPUImageHighlightShadowFilter gpuImageHighlightShadowFilter = new GPUImageHighlightShadowFilter(item.getShadow() / 100, item.getHighlight() / 100);
+        filterArrayList.add(gpuImageHighlightShadowFilter);
+
+        GPUImageBrightnessFilter gpuImageBrightnessFilter = new GPUImageBrightnessFilter(item.getFade() / 100);
+        filterArrayList.add(gpuImageBrightnessFilter);
+        return filterArrayList;
     }
 
     @Override
@@ -137,7 +202,7 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
     public void initGLView() {
         RelativeLayout rlGlViewContainer = (RelativeLayout)findViewById(R.id.rlGlViewContainer);
         mediaPlayer = MediaPlayer.create(this, R.raw.we_chat_sight723);
-        mediaPlayer.setLooping(true);
+//        mediaPlayer.setLooping(true);
         mediaPlayer.start();
         videoSurfaceView = new VideoSurfaceView(this, mediaPlayer);
         videoSurfaceView.setSourceSize(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight());
