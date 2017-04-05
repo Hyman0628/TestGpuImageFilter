@@ -359,6 +359,7 @@ public class ExtractDecodeEditEncodeMuxTest {
                     outputSurface);
         } catch (Exception e) {
             e.printStackTrace();
+            Log.d(TAG, "Exception: " + Log.getStackTraceString(e));
         } finally {
             if (VERBOSE) Log.d(TAG, "releasing extractor, decoder, encoder, and muxer");
             // Try to release everything we acquired, even if one of the releases fails, in which
@@ -783,6 +784,8 @@ public class ExtractDecodeEditEncodeMuxTest {
                             + decoderOutputBufferIndex);
                     Log.d(TAG, "video decoder: returned buffer of size "
                             + videoDecoderOutputBufferInfo.size);
+                    Log.d(TAG, "video decoder: returned buffer of flags "
+                            + videoDecoderOutputBufferInfo.flags);
                 }
                 ByteBuffer decoderOutputBuffer =
                         videoDecoderOutputBuffers[decoderOutputBufferIndex];

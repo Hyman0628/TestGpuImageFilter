@@ -116,20 +116,20 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
         GPUImageRGBFilter gpuImageRGBFilter = new GPUImageRGBFilter(item.getRed1() / 100, item.getGreen1() / 100, item.getBlue1() / 100);
         filterArrayList.add(gpuImageRGBFilter);
 
-        /*GPUImageHighlightShadowTintFilter highlightShadowTintFilter0 = new GPUImageHighlightShadowTintFilter();
-        highlightShadowTintFilter0.setmShadowTintColorRed(item.getRed2() / 100, 0, 0, 1);
-        highlightShadowTintFilter0.setmHighlightTintColorRed(item.getRed0() / 100, 0, 0, 1);
+        GPUImageHighlightShadowTintFilter highlightShadowTintFilter0 = new GPUImageHighlightShadowTintFilter();
+        highlightShadowTintFilter0.setmShadowTintColorRed(item.getRed2() / 100, 0, 0);
+        highlightShadowTintFilter0.setmHighlightTintColorRed(item.getRed0() / 100, 0, 0);
         filterArrayList.add(highlightShadowTintFilter0);
 
         GPUImageHighlightShadowTintFilter highlightShadowTintFilter1 = new GPUImageHighlightShadowTintFilter();
-        highlightShadowTintFilter1.setmShadowTintColorRed(0, item.getGreen2() / 100, 0, 1);
-        highlightShadowTintFilter1.setmHighlightTintColorRed(0, item.getGreen0() / 100, 0, 1);
+        highlightShadowTintFilter1.setmShadowTintColorRed(0, item.getGreen2() / 100, 0);
+        highlightShadowTintFilter1.setmHighlightTintColorRed(0, item.getGreen0() / 100, 0);
         filterArrayList.add(highlightShadowTintFilter1);
 
         GPUImageHighlightShadowTintFilter highlightShadowTintFilter2 = new GPUImageHighlightShadowTintFilter();
-        highlightShadowTintFilter2.setmShadowTintColorRed(0, 0, item.getBlue2() / 100, 1);
-        highlightShadowTintFilter2.setmHighlightTintColorRed(0, 0, item.getBlue0() / 100, 1);
-        filterArrayList.add(highlightShadowTintFilter2);*/
+        highlightShadowTintFilter2.setmShadowTintColorRed(0, 0, item.getBlue2() / 100);
+        highlightShadowTintFilter2.setmHighlightTintColorRed(0, 0, item.getBlue0() / 100);
+        filterArrayList.add(highlightShadowTintFilter2);
 
         GPUImageExposureFilter gpuImageExposureFilter = new GPUImageExposureFilter(item.getExposure() / 100);
         filterArrayList.add(gpuImageExposureFilter);
