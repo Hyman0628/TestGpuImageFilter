@@ -52,7 +52,7 @@ public class ExtractDecodeEditEncodeMuxTest {
         mAppContext = context.getApplicationContext();
     }
     private static final String TAG = ExtractDecodeEditEncodeMuxTest.class.getSimpleName();
-    private static final boolean VERBOSE = false; // lots of logging
+    private static final boolean VERBOSE = true; // lots of logging
     /** How long to wait for the next buffer to become available. */
     private static final int TIMEOUT_USEC = 10000;
     /** Where to output the test files. */
@@ -127,8 +127,8 @@ public class ExtractDecodeEditEncodeMuxTest {
         mFilterType = filterType;
     }
     public void testExtractDecodeEditEncodeMuxAudioVideo(final MainActivity.ResultListener resultListener) throws Throwable {
-        setSize(1024, 768);
-        setSource(R.raw.ori13637);
+        setSize(720, 1280);
+        setSource(R.raw.ori2470);
         setCopyAudio();
         setCopyVideo();
 //        TestWrapper.runTest(this);
@@ -338,6 +338,9 @@ public class ExtractDecodeEditEncodeMuxTest {
                                 inputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
                 outputAudioFormat.setInteger(MediaFormat.KEY_BIT_RATE, OUTPUT_AUDIO_BIT_RATE);
                 outputAudioFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, OUTPUT_AUDIO_AAC_PROFILE);
+//                int maxInputSize = inputFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE);
+//                Log.d(TAG, "audio input size = " + maxInputSize);
+//                outputAudioFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, maxInputSize);
                 // Create a MediaCodec for the desired codec, then configure it as an encoder with
                 // our desired properties. Request a Surface to use for input.
                 audioEncoder = createAudioEncoder(audioCodecInfo, outputAudioFormat);
@@ -647,6 +650,8 @@ public class ExtractDecodeEditEncodeMuxTest {
         int audioExtractedFrameCount = 0;
         int audioDecodedFrameCount = 0;
         int audioEncodedFrameCount = 0;
+        long audioPresentationTimeUsLast = 0;
+
         while ((mCopyVideo && !videoEncoderDone) || (mCopyAudio && !audioEncoderDone)) {
             if (VERBOSE) {
                 Log.d(TAG, String.format(
@@ -912,8 +917,12 @@ public class ExtractDecodeEditEncodeMuxTest {
                             audioDecoderOutputBuffers[pendingAudioDecoderOutputBufferIndex]
                                     .duplicate();
                     decoderOutputBuffer.position(audioDecoderOutputBufferInfo.offset);
-                    decoderOutputBuffer.limit(audioDecoderOutputBufferInfo.offset + size);
+
                     encoderInputBuffer.position(0);
+                    int encoderLimit = encoderInputBuffer.limit();
+                    int putMinSize = size > encoderLimit ? encoderLimit : size;
+                    decoderOutputBuffer.limit(audioDecoderOutputBufferInfo.offset + putMinSize);
+
                     encoderInputBuffer.put(decoderOutputBuffer);
                     audioEncoder.queueInputBuffer(
                             encoderInputBufferIndex,
@@ -1030,6 +1039,15 @@ public class ExtractDecodeEditEncodeMuxTest {
                     Log.d(TAG, "audio encoder: returned buffer for time "
                             + audioEncoderOutputBufferInfo.presentationTimeUs);
                 }
+                if (audioPresentationTimeUsLast == 0) { // Defined in the begining of method
+                    audioPresentationTimeUsLast = audioEncoderOutputBufferInfo.presentationTimeUs;
+                } else {
+                    if (audioPresentationTimeUsLast > audioEncoderOutputBufferInfo.presentationTimeUs) {
+                        audioEncoderOutputBufferInfo.presentationTimeUs = audioPresentationTimeUsLast + 1;
+                    }
+                    audioPresentationTimeUsLast = audioEncoderOutputBufferInfo.presentationTimeUs;
+                }
+
                 if (audioEncoderOutputBufferInfo.size != 0) {
                     muxer.writeSampleData(
                             outputAudioTrack, encoderOutputBuffer, audioEncoderOutputBufferInfo);
@@ -1072,6 +1090,7 @@ public class ExtractDecodeEditEncodeMuxTest {
         }
         // TODO: Check the generated output file.
     }
+
     private static boolean isVideoFormat(MediaFormat format) {
         return getMimeTypeFor(format).startsWith("video/");
     }

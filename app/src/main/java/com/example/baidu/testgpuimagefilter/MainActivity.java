@@ -177,7 +177,14 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 //            mGPUImage.setFilter(mFilter);
             GPUImageFilterGroup filterGroup = new GPUImageFilterGroup();
             filterGroup.addFilter(new GPUImageExtTexFilter());
-            filterGroup.addFilter(mFilter);
+
+            // TODO test only
+            ArrayList<GPUImageFilter> list = generateGPUImageFilter(FilterBean.formatFromJsonStr(FilterBean.TEST_YIDE_2));
+            for (int i = 0; i< list.size(); ++i) {
+                filterGroup.addFilter(list.get(i));
+            }
+
+//            filterGroup.addFilter(mFilter);
             videoSurfaceView.setFilter(filterGroup);
             mFilterAdjuster = new GPUImageFilterTools.FilterAdjuster(mFilter);
         }
