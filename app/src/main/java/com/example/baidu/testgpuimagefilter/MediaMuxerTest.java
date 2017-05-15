@@ -36,8 +36,8 @@ public class MediaMuxerTest {
     public void testVideoAudio() throws Exception {
         int[] source = new int[3];
         source[0] = R.raw.same442;
-        source[1] = R.raw.same777;
-        source[2] = R.raw.same2099;
+        source[1] = R.raw.video_480x360_mp4_h264_500kbps_30fps_aac_stereo_128kbps_44100hz;
+        source[2] = R.raw.we_chat_sight723;
         String outputFile = "/sdcard/videoAudio" + System.currentTimeMillis() + ".mp4";
 
         AssetFileDescriptor testFd = mResources.openRawResourceFd(source[0]);

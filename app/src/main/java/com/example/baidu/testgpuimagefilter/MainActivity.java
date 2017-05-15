@@ -3,6 +3,7 @@ package com.example.baidu.testgpuimagefilter;
 import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import jp.co.cyberagent.android.gpuimage.GPUImageBrightnessFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
@@ -208,7 +210,19 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
     public void initGLView() {
         RelativeLayout rlGlViewContainer = (RelativeLayout)findViewById(R.id.rlGlViewContainer);
-        mediaPlayer = MediaPlayer.create(this, R.raw.we_chat_sight723);
+//        mediaPlayer = MediaPlayer.create(this, R.raw.we_chat_sight723);
+        mediaPlayer = new MediaPlayer();
+
+        try {
+            HashMap<String ,String> headersMap = new HashMap<String, String>();
+            headersMap.put("User-Agent", "test-hou");
+            headersMap.put("SelfDefineKey", "self-hou");
+            mediaPlayer.setDataSource(this, Uri.parse("http://172.18.24.100:8000/3110.mp4"), headersMap);
+            mediaPlayer.prepare();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 //        mediaPlayer.setLooping(true);
         mediaPlayer.start();
         videoSurfaceView = new VideoSurfaceView(this, mediaPlayer);
