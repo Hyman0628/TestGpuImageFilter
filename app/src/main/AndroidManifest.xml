@@ -17,28 +17,34 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"></activity>
-        <activity android:name=".MultiFilterPreviewActivity" />
-        <activity android:name=".MultiFilterTexturePreviewActivity" />
-        <activity android:name=".MediaRecorderActivity"></activity>
-        <activity android:name=".BMediaTestPlayActivity"></activity>
-        <activity
-            android:name=".MuxMultiMp4Activity"
-            android:label="@string/title_activity_mux_multi_mp4">
+        <activity android:name=".MainActivity" >
 
         </activity>
-        <activity
-            android:name=".Main2Activity"
-            android:label="@string/title_activity_main2">
-
+        <activity android:name=".MultiFilterPreviewActivity" />
+        <activity android:name=".MultiFilterTexturePreviewActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MediaRecorderActivity" />
+        <activity android:name=".BMediaTestPlayActivity" />
+        <activity
+            android:name=".MuxMultiMp4Activity"
+            android:label="@string/title_activity_mux_multi_mp4"></activity>
+        <activity
+            android:name=".Main2Activity"
+            android:label="@string/title_activity_main2">
+
+        </activity>
+
+        <activity
+            android:name=".Main3Activity"
+            android:label="@string/title_activity_main3">
 
 
+        </activity>
     </application>
 
 </manifest>

@@ -3,6 +3,7 @@ package com.example.baidu.testgpuimagefilter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.opengl.GLES11Ext;
@@ -37,6 +38,7 @@ import java.util.Map;
 
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 
 import static android.R.attr.format;
 import static android.R.attr.height;
@@ -485,8 +487,13 @@ public class MultiFilterTexturePreviewActivity extends Activity implements Adapt
                 for (int i = 0; i < MultiFilterTexturePreviewActivity.arrText.length; ++i) {
                     GPUImageFilterGroup gpuImageFilter = new GPUImageFilterGroup();
                     gpuImageFilter.addFilter(new GPUImageExtTexFilter());
-                    GPUImageFilter filter = GPUImageFilterTools.createFilterForType(activity, MultiFilterTexturePreviewActivity.arrImages[i]);
-                    gpuImageFilter.addFilter(filter);
+//                    GPUImageFilter filter = GPUImageFilterTools.createFilterForType(activity, MultiFilterTexturePreviewActivity.arrImages[i]);
+//                    gpuImageFilter.addFilter(filter);
+
+                    GPUImageLookupFilter lookupFilter = new GPUImageLookupFilter();
+                    lookupFilter.setBitmap(BitmapFactory.decodeResource(getResources(), R.raw.overlaymap));
+                    gpuImageFilter.addFilter(lookupFilter);
+
                     gpuImageFilter.init();
                     gpuImageFilter.onOutputSizeChanged(width, height);
                     gpuImageFilters.put(i, gpuImageFilter);

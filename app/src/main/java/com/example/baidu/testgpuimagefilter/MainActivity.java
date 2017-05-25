@@ -2,6 +2,7 @@ package com.example.baidu.testgpuimagefilter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
 import jp.co.cyberagent.android.gpuimage.GPUImageGammaFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageHighlightShadowFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageRGBFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSaturationFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
@@ -181,11 +183,13 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
             filterGroup.addFilter(new GPUImageExtTexFilter());
 
             // TODO test only
-            ArrayList<GPUImageFilter> list = generateGPUImageFilter(FilterBean.formatFromJsonStr(FilterBean.TEST_YIDE_2));
-            for (int i = 0; i< list.size(); ++i) {
-                filterGroup.addFilter(list.get(i));
-            }
-
+//            ArrayList<GPUImageFilter> list = generateGPUImageFilter(FilterBean.formatFromJsonStr(FilterBean.TEST_YIDE_2));
+//            for (int i = 0; i< list.size(); ++i) {
+//                filterGroup.addFilter(list.get(i));
+//            }
+            GPUImageLookupFilter lookupFilter = new GPUImageLookupFilter();
+            lookupFilter.setBitmap(BitmapFactory.decodeResource(getResources(), R.raw.overlaymap));
+            filterGroup.addFilter(lookupFilter);
 //            filterGroup.addFilter(mFilter);
             videoSurfaceView.setFilter(filterGroup);
             mFilterAdjuster = new GPUImageFilterTools.FilterAdjuster(mFilter);
@@ -210,18 +214,18 @@ public class MainActivity extends Activity implements SeekBar.OnSeekBarChangeLis
 
     public void initGLView() {
         RelativeLayout rlGlViewContainer = (RelativeLayout)findViewById(R.id.rlGlViewContainer);
-//        mediaPlayer = MediaPlayer.create(this, R.raw.we_chat_sight723);
-        mediaPlayer = new MediaPlayer();
-
-        try {
-            HashMap<String ,String> headersMap = new HashMap<String, String>();
-            headersMap.put("User-Agent", "test-hou");
-            headersMap.put("SelfDefineKey", "self-hou");
-            mediaPlayer.setDataSource(this, Uri.parse("http://172.18.24.100:8000/3110.mp4"), headersMap);
-            mediaPlayer.prepare();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        mediaPlayer = MediaPlayer.create(this, R.raw.we_chat_sight723);
+//        mediaPlayer = new MediaPlayer();
+//
+//        try {
+//            HashMap<String ,String> headersMap = new HashMap<String, String>();
+//            headersMap.put("User-Agent", "test-hou");
+//            headersMap.put("SelfDefineKey", "self-hou");
+//            mediaPlayer.setDataSource(this, Uri.parse("http://172.18.24.100:8000/3110.mp4"), headersMap);
+//            mediaPlayer.prepare();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
 //        mediaPlayer.setLooping(true);
         mediaPlayer.start();
