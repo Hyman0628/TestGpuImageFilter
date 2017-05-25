@@ -60,7 +60,9 @@ public class GPUImageTwoInputFilter extends GPUImageFilter {
 
         mFilterSecondTextureCoordinateAttribute = GLES20.glGetAttribLocation(getProgram(), "inputTextureCoordinate2");
         mFilterInputTextureUniform2 = GLES20.glGetUniformLocation(getProgram(), "inputImageTexture2"); // This does assume a name of "inputImageTexture2" for second input texture in the fragment shader
-        GLES20.glEnableVertexAttribArray(mFilterSecondTextureCoordinateAttribute);
+        if (mFilterSecondTextureCoordinateAttribute >= 0) {
+            GLES20.glEnableVertexAttribArray(mFilterSecondTextureCoordinateAttribute);
+        }
 
         if (mBitmap != null&&!mBitmap.isRecycled()) {
             setBitmap(mBitmap);
@@ -109,13 +111,15 @@ public class GPUImageTwoInputFilter extends GPUImageFilter {
 
     @Override
     protected void onDrawArraysPre() {
-        GLES20.glEnableVertexAttribArray(mFilterSecondTextureCoordinateAttribute);
+        if (mFilterSecondTextureCoordinateAttribute >= 0) {
+            GLES20.glEnableVertexAttribArray(mFilterSecondTextureCoordinateAttribute);
+            mTexture2CoordinatesBuffer.position(0);
+            GLES20.glVertexAttribPointer(mFilterSecondTextureCoordinateAttribute, 2, GLES20.GL_FLOAT, false, 0, mTexture2CoordinatesBuffer);
+        }
         GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mFilterSourceTexture2);
         GLES20.glUniform1i(mFilterInputTextureUniform2, 3);
 
-        mTexture2CoordinatesBuffer.position(0);
-        GLES20.glVertexAttribPointer(mFilterSecondTextureCoordinateAttribute, 2, GLES20.GL_FLOAT, false, 0, mTexture2CoordinatesBuffer);
     }
 
     public void setRotation(final Rotation rotation, final boolean flipHorizontal, final boolean flipVertical) {
