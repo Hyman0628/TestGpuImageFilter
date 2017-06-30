@@ -189,6 +189,8 @@ public class GPUImageFilterTools {
 
         filters.addFilter("Transform (2-D)", FilterType.TRANSFORM2D);
 
+        filters.addFilter("Burn Text", FilterType.BURN_TEXT);
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Choose a filter");
@@ -380,6 +382,11 @@ public class GPUImageFilterTools {
                 return new GPUImageTransformFilter();
             case NOFILTER:
                 return new GPUImageFilter();
+
+            case BURN_TEXT:
+                GPUImageBurnTextFilter burnTextFilter = new GPUImageBurnTextFilter();
+                burnTextFilter.setText("成功了！烧进去了！", 30f, 0xff00ff00);
+                return burnTextFilter;
             default:
                 throw new IllegalStateException("No filter of that type!");
         }
@@ -407,7 +414,7 @@ public class GPUImageFilterTools {
         BLEND_DISSOLVE, BLEND_EXCLUSION, BLEND_SOURCE_OVER, BLEND_HARD_LIGHT, BLEND_LIGHTEN, BLEND_ADD, BLEND_DIVIDE, BLEND_MULTIPLY, BLEND_OVERLAY, BLEND_SCREEN, BLEND_ALPHA,
         BLEND_COLOR, BLEND_HUE, BLEND_SATURATION, BLEND_LUMINOSITY, BLEND_LINEAR_BURN, BLEND_SOFT_LIGHT, BLEND_SUBTRACT, BLEND_CHROMA_KEY, BLEND_NORMAL, LOOKUP_AMATORKA,
         GAUSSIAN_BLUR, CROSSHATCH, BOX_BLUR, CGA_COLORSPACE, DILATION, KUWAHARA, RGB_DILATION, SKETCH, TOON, SMOOTH_TOON, BULGE_DISTORTION, GLASS_SPHERE, HAZE, LAPLACIAN, NON_MAXIMUM_SUPPRESSION,
-        SPHERE_REFRACTION, SWIRL, WEAK_PIXEL_INCLUSION, FALSE_COLOR, COLOR_BALANCE, LEVELS_FILTER_MIN, BILATERAL_BLUR, HALFTONE, TRANSFORM2D
+        SPHERE_REFRACTION, SWIRL, WEAK_PIXEL_INCLUSION, FALSE_COLOR, COLOR_BALANCE, LEVELS_FILTER_MIN, BILATERAL_BLUR, HALFTONE, TRANSFORM2D, BURN_TEXT
     }
 
     private static class FilterList {
